@@ -28,16 +28,53 @@ impl Scanner {
     fn run(&mut self) {
         // TODO(you): drive the scan: read one token at a time until the source runs out, then
         //            add the EOF token. Spec 6.1 says which line EOF carries.
-        todo!("run")
-    }
+        while !self.at_end(){
+
+            self.start = self.current;
+            self.scan_token();
+        }
+
+        self.start = self.current;
+        self.add(TokenType::Eof);
+     }
 
     fn scan_token(&mut self) {
         // TODO(you): recognise one token. Spec 1.2 lists every token type, 1.1 covers
         //            whitespace and comments, and an unrecognised character is 'Character is
         //            not part of any token.' (5.1).
-        todo!("scan_token")
-    }
+        let letter = self.advance();
 
+        if letter == '(' {
+            self.add(TokenType::LParen)
+        }
+       else if letter == '+'{
+            self.add(TokenType::Plus)
+        }
+
+        else if letter == '!'{
+            if self.matches('='){
+                self.add(TokenType::BangEqual);
+            }
+            else {
+                self.add(TokenType::Bang);
+            }
+
+        }
+        else if letter == '/'{
+            if self.matches('/'){
+                self.error(self.line,"It is a comment")
+
+            }
+            else{
+                self.add(TokenType::Slash);
+            }
+
+        }
+        else {
+            self.error(self.line,"Character is not part of any token");
+        }
+
+    }
     fn string(&mut self) {
         // TODO(you): scan a string literal. A string may span lines, and an unterminated one is
         //            reported at the line it opened on (1.5; the message is in 5.1).
@@ -53,7 +90,15 @@ impl Scanner {
     fn identifier(&mut self) {
         // TODO(you): scan an identifier, then decide whether it is a keyword; keyword() in
         //            token.rs does the lookup (1.2, 1.3).
-        todo!("identifier")
+
+        while self.peek().is_ascii_alphanumeric() || self.peek() == '_'{
+            self.advance();
+        }
+        
+        let word: String = self.src[self.start..self.current].iter().collect();
+
+        self.add(keyword(&word).unwrap_or(TokenType::Identifier));
+        //todo!("identifier")
     }
 
     // --- primitives ---------------------------------------------------------------
