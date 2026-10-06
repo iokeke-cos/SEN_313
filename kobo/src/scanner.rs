@@ -149,12 +149,13 @@ impl Scanner {
         while self.peek() != '"' && !self.at_end(){
             if self.peek() == '\n'{
                 self.line += 1;
-                self.advance();
             }
+            self.advance();
         }
 
         if self.at_end(){
-            self.error(start_line,("String is never closed."));
+            self.error(start_line, "String is never closed.");
+            return;
         }
         else{
             self.advance();
@@ -170,10 +171,14 @@ impl Scanner {
         }
 
         if self.peek() == '.' && self.peek_next().is_ascii_digit(){
-            self.add(TokenType::Number); 
+            self.advance(); 
+
+            while self.peek().is_ascii_digit(){
+                self.advance();
+            }
         }
         
-        self.add(TokenType::Number)
+        self.add(TokenType::Number);
         
     }
 
