@@ -28,21 +28,19 @@ impl Scanner {
     fn run(&mut self) {
         // TODO(you): drive the scan: read one token at a time until the source runs out, then
         //            add the EOF token. Spec 6.1 says which line EOF carries.
-        while !self.at_end(){
-
+            while !self.at_end() {
             self.start = self.current;
-            if let Some(t) = self.tokens.last(){
-                self.line = self.token();
-            }
-            else{
-                self.line() = 1;
-            }
-
-            self.add(TokenType::Eof);
-            
+            self.scan_token();
         }
 
         self.start = self.current;
+
+        if let Some(t) = self.tokens.last() {
+            self.line = t.line;
+        } else {
+            self.line = 1;
+        }
+
         self.add(TokenType::Eof);
      }
 
