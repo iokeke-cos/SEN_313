@@ -31,7 +31,15 @@ impl Scanner {
         while !self.at_end(){
 
             self.start = self.current;
-            self.scan_token();
+            if let Some(t) = self.tokens.last(){
+                self.line = self.token();
+            }
+            else{
+                self.line() = 1;
+            }
+
+            self.add(TokenType::Eof);
+            
         }
 
         self.start = self.current;
@@ -135,7 +143,7 @@ impl Scanner {
         else if letter == '*'{
             self.add(TokenType::Star);
         }
-        else if letter = '"'{
+        else if letter == '"'{
             self.string();
         }
 
