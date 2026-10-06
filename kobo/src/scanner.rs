@@ -84,7 +84,15 @@ impl Scanner {
     fn number(&mut self) {
         // TODO(you): scan a number literal: digits, then a fractional part only when a digit
         //            follows the dot (1.4).
-        todo!("number")
+        let c = self.advance();
+    
+        if self.peek_next() == '.' && self.peek().is_ascii_digit(){
+            self.add(TokenType::Number); 
+        }
+        
+        while self.peek().is_ascii_digit() {
+            self.add(TokenType::Number)
+        }
     }
 
     fn identifier(&mut self) {
