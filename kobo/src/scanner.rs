@@ -135,6 +135,9 @@ impl Scanner {
         else if letter == '*'{
             self.add(TokenType::Star);
         }
+        else if letter = '"'{
+            self.string();
+        }
 
         else {
             self.error(self.line,"Character is not part of any token.");
