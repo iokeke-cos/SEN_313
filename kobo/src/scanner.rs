@@ -51,6 +51,10 @@ impl Scanner {
             self.add(TokenType::Plus)
         }
 
+       else if letter == ';'{
+        self.add(TokenType::Semicolon)
+       } 
+
         else if letter == '!'{
             if self.matches('='){
                 self.add(TokenType::BangEqual);
@@ -60,39 +64,117 @@ impl Scanner {
             }
 
         }
+        else if letter == '='{
+            if self.matches('='){
+                self.add(TokenType::EqualEqual);
+            }
+            else {
+                self.add(TokenType::Equal);
+            }
+
+        }
+
+        else if letter == '<'{
+            if self.matches('='){
+                self.add(TokenType::LessEqual);
+            }
+            else {
+                self.add(TokenType::Less);
+            }
+
+        }
+
+        else if letter == '>'{
+            if self.matches('='){
+                self.add(TokenType::GreaterEqual);
+            }
+            else {
+                self.add(TokenType::Greater);
+            }
+
+        }
+
         else if letter == '/'{
             if self.matches('/'){
-                self.error(self.line,"It is a comment")
-
+                while self.peek() != '\n' && !self.at_end() {
+                    self.advance();
+                }
             }
             else{
                 self.add(TokenType::Slash);
             }
 
         }
+        else if letter.is_ascii_alphabetic() || letter == '_'{
+            self.identifier();
+        }
+        else if letter.is_ascii_digit(){
+            self.number();
+        }
+        else if letter == ' ' || letter == '\t' || letter == '\r'{
+            // no reaction
+        }
+        else if letter == '\n'{
+            self.line += 1;
+        }
+        else if letter == ')'{
+            self.add(TokenType::RParen);
+        }
+        else if letter == '{'{
+            self.add(TokenType::LBrace);
+        }
+        else if letter == '}'{
+            self.add(TokenType::RBrace);
+        }
+        else if letter == ','{
+            self.add(TokenType::Comma);
+        }
+        else if letter == '-'{
+            self.add(TokenType::Minus);
+        }
+        else if letter == '*'{
+            self.add(TokenType::Star);
+        }
+
         else {
-            self.error(self.line,"Character is not part of any token");
+            self.error(self.line,"Character is not part of any token.");
         }
 
     }
     fn string(&mut self) {
         // TODO(you): scan a string literal. A string may span lines, and an unterminated one is
         //            reported at the line it opened on (1.5; the message is in 5.1).
-        todo!("string")
+        let start_line = self.line;
+
+        while self.peek() != '"' && !self.at_end(){
+            if self.peek() == '\n'{
+                self.line += 1;
+                self.advance();
+            }
+        }
+
+        if self.at_end(){
+            self.error(start_line,("String is never closed."));
+        }
+        else{
+            self.advance();
+            self.add(TokenType::Str);
+        }
     }
 
     fn number(&mut self) {
         // TODO(you): scan a number literal: digits, then a fractional part only when a digit
         //            follows the dot (1.4).
-        let c = self.advance();
-    
-        if self.peek_next() == '.' && self.peek().is_ascii_digit(){
+        while self.peek().is_ascii_digit(){
+            self.advance();
+        }
+
+        if self.peek() == '.' && self.peek_next().is_ascii_digit(){
             self.add(TokenType::Number); 
         }
         
-        while self.peek().is_ascii_digit() {
-            self.add(TokenType::Number)
-        }
+        self.add(TokenType::Number)
+        
     }
 
     fn identifier(&mut self) {
