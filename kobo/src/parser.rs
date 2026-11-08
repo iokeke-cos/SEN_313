@@ -148,7 +148,21 @@ impl Parser {
     fn equality(&mut self) -> Parsed<Expr> {
         // TODO(you): spec 3.2, one rung of the precedence ladder.
         // TEMPORARY: lets the rules below run until you write this one.
-        self.comparison()
+        let mut expr = self.comparison()?;
+
+        while self.matches(&[TokenType::BangEqual, TokenType::EqualEqual]) {
+
+            let op = self.previous();
+            let right = self.comparison()?;
+
+            expr = Expr::Binary {
+                left: Box::new(expr),
+                op,
+                right: Box::new(right),
+            };
+        }
+
+        Ok(expr)
     }
 
     fn comparison(&mut self) -> Parsed<Expr> {
@@ -192,7 +206,7 @@ impl Parser {
         let mut expr = self.unary()?;
 
         while self.matches(&[TokenType::Slash, TokenType::Star]) {
-            let op = self.previous().clone();
+            let op = self.previous();
             let right = self.unary()?;
 
             expr = Expr::Binary {
@@ -209,7 +223,7 @@ impl Parser {
         // TODO(you): spec 3.2: unary operators are right-associative.
         // TEMPORARY: lets the rules below run until you write this one.
         if self.matches(&[TokenType::Bang, TokenType::Minus]) {
-            let op = self.previous().clone();
+            let op = self.previous();
             let right = self.unary()?;
 
             return Ok(Expr::Unary {
