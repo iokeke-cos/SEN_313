@@ -152,9 +152,20 @@ impl Parser {
     }
 
     fn comparison(&mut self) -> Parsed<Expr> {
-        // TODO(you): spec 3.2, one rung of the precedence ladder.
-        // TEMPORARY: lets the rules below run until you write this one.
-        self.term()
+        let mut expr = self.term()?;
+
+        while self.matches(&[TokenType::Greater, TokenType::GreaterEqual, TokenType::Less, TokenType::LessEqual]) {
+            let op = self.previous();
+            let right = self.term()?;
+
+            expr = Expr::Binary {
+                left: Box::new(expr),
+                op,
+                right: Box::new(right),
+            };
+        }
+
+        Ok(expr)
     }
 
     fn term(&mut self) -> Parsed<Expr> {
@@ -174,6 +185,7 @@ impl Parser {
 
         Ok(expr)
     }
+
 
     fn factor(&mut self) -> Parsed<Expr> {
         // TODO(you): spec 3.2, one rung of the precedence ladder.
@@ -212,13 +224,14 @@ impl Parser {
     fn call(&mut self) -> Parsed<Expr> {
         // TODO(you): spec 3.2: call -> primary ( '(' arguments? ')' )*. That is a loop, not
         //            recursion; f(1)(2) is one callee called twice.
-        // TEMPORARY: lets the rules below run until you write this one.
-         let mut expr = self.primary()?;
+        let mut expr = self.primary()?;
 
         loop {
-            while self.matches(&[TokenType::LParen]) {
-                expr = self.finish_call(expr)?;
+            if !self.matches(&[TokenType::LParen]) {
+                break;
             }
+
+            expr = self.finish_call(expr)?;
         }
 
         Ok(expr)
